@@ -4,7 +4,11 @@ module BlacklightOaiProvider::SolrDocumentExtension
   def timestamp
     Time.parse get('timestamp')
   end
-  def to_oai_dc
-    export_as('oai_dc_xml')
+  # def to_oai_dc
+  #   export_as('oai_dc_xml')
+  # end
+  
+  def to_mods
+    export_as('mods_xml')
   end
 end
