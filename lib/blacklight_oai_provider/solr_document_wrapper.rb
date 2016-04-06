@@ -28,19 +28,19 @@ module BlacklightOaiProvider
       return next_set(options[:resumption_token]) if options[:resumption_token]
 
       if :all == selector
+        puts @options
+        # 2016-04-06T17:09:49Z
+        if @options.has_key?(:from)
+          response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @options[:from] + " TO NOW]"})
+        else
+          response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
+        end
+
         if @limit && response.total >= @limit
           return select_partial(OAI::Provider::ResumptionToken.new(options.merge({:last => 0})))
         end
       else
         response, records = @controller.get_solr_response_for_doc_id selector.split('/', 2).last
-      end
-
-      puts @options
-      # 2016-04-06T17:09:49Z
-      if @options.has_key?(:from)
-        response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @options[:from] + " TO NOW]"})
-      else
-        response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
       end
       records
     end
