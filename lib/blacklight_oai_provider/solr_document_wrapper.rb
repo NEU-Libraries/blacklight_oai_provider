@@ -31,14 +31,16 @@ module BlacklightOaiProvider
         puts @options
         puts @controller.params
         # 2016-04-06T17:09:49Z
-        response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
+        if @controller.params.has_key?(:from)
+          puts "has from param"
+          response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
+        else
+          response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
+        end
 
         if @limit && response.total >= @limit
           return select_partial(OAI::Provider::ResumptionToken.new(options.merge({:last => 0})))
         end
-      elsif @controller.params.has_key?(:from)
-        puts "has from param"
-        response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
       else
         response, records = @controller.get_solr_response_for_doc_id selector.split('/', 2).last
       end
@@ -46,8 +48,12 @@ module BlacklightOaiProvider
     end
 
     def select_partial token
-      records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
-
+      if @controller.params.has_key?(:from)
+        puts "has from param"
+        records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
+      else
+        records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
+      end
       raise ::OAI::ResumptionTokenException.new unless records
 
       OAI::Provider::PartialResult.new(records, token.next(token.last+@limit))
