@@ -31,15 +31,14 @@ module BlacklightOaiProvider
         puts @options
         puts @controller.params
         # 2016-04-06T17:09:49Z
-        if @controller.params.has_key?(:from)
-          response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
-        else
-          response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
-        end
+        response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
 
         if @limit && response.total >= @limit
           return select_partial(OAI::Provider::ResumptionToken.new(options.merge({:last => 0})))
         end
+      elsif @controller.params.has_key?(:from)
+        puts "has from param"
+        response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
       else
         response, records = @controller.get_solr_response_for_doc_id selector.split('/', 2).last
       end
