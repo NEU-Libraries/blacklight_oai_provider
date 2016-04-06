@@ -50,7 +50,7 @@ module BlacklightOaiProvider
     def select_partial token
       if @controller.params.has_key?(:from)
         puts "has from param"
-        records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
+        records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]", :start => token.last}).last
       else
         records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
       end
