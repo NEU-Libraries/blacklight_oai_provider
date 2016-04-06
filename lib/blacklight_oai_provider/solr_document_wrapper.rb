@@ -32,8 +32,8 @@ module BlacklightOaiProvider
         puts @controller.params
         # 2016-04-06T17:09:49Z
         if @controller.params.has_key?(:from)
-          @controller.params[:fq] << "system_create_dtsi:[" + @controller.params?(:from) + " TO NOW]"
-          response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params(:from) + " TO NOW]"})
+          @controller.params[:fq] << "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"
+          response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
         else
           response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
         end
