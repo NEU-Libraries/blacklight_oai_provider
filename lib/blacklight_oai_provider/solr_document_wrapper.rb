@@ -30,7 +30,7 @@ module BlacklightOaiProvider
       if :all == selector
         if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
           @controller.params[:from] = parse_time(@controller.params[:from]) if @controller.params.has_key?(:from)
-          @controller.params[:until] = parse_time(@controller.params[:until]) if @controller.params.has_key?(:until)
+          @controller.params[:until] = parse_time(@controller.params[:until], true) if @controller.params.has_key?(:until)
           @controller.solr_search_params_logic << :apply_oai_filters
         end
         response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
@@ -63,8 +63,11 @@ module BlacklightOaiProvider
       select_partial(token)
     end
 
-    def parse_time(time)
+    def parse_time(time, bump=false)
       time_obj = Time.parse(time.to_s)
+      if bump #the oai spec says that until must allow for the until date to be included, so we will bump up the time by 1 second
+        time_obj = time_obj.+1.second
+      end
       return time_obj.utc.xmlschema
     end
   end
