@@ -34,7 +34,7 @@ module BlacklightOaiProvider
         if @controller.params.has_key?(:from)
           puts "has from param"
           # response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
-          @controller.solr_search_params_logic += [:apply_filters]
+          @controller.solr_search_params_logic += [:apply_oai_filters]
           response, records = @controller.get_search_results
         else
           response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
@@ -53,7 +53,8 @@ module BlacklightOaiProvider
       if @controller.params.has_key?(:from)
         puts "has from param"
         # records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]", :start => token.last}).last
-        @controller.solr_search_params_logic += [:apply_filters]
+        self.solr_search_params_logic += [:apply_oai_filters]
+        @controller.solr_search_params_logic += [:apply_oai_filters]
         response, records = @controller.get_search_results
       else
         records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
@@ -70,7 +71,7 @@ module BlacklightOaiProvider
       select_partial(token)
     end
 
-    def apply_filters(solr_parameters, user_parameters)
+    def apply_oai_filters(solr_parameters, user_parameters)
       solr_parameters[:sort] = @timestamp_field + ' asc'
       solr_parameters[:rows] = @limit
       solr_parameters[:fq] << "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"
