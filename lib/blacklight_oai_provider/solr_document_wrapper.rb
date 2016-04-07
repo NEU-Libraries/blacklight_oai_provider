@@ -29,8 +29,8 @@ module BlacklightOaiProvider
 
       if :all == selector
         if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
-          @controller.params[:from] = parse_to_local(@controller.params[:from]) if @controller.has_key?(:from)
-          @controller.params[:until] = parse_to_local(@controller.params[:until]) if @controller.has_key?(:until)
+          @controller.params[:from] = parse_to_local(@controller.params[:from]) if @controller.params.has_key?(:from)
+          @controller.params[:until] = parse_to_local(@controller.params[:until]) if @controller.params.has_key?(:until)
           @controller.params[:sort] = @timestamp_field + ' asc'
           @controller.params[:rows] = @limit
           @controller.solr_search_params_logic << :apply_oai_filters
@@ -50,8 +50,8 @@ module BlacklightOaiProvider
 
     def select_partial token
       if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
-        @controller.params[:from] = parse_to_local(@controller.params[:from]) if @controller.has_key?(:from)
-        @controller.params[:until] = parse_to_local(@controller.params[:until]) if @controller.has_key?(:until)
+        @controller.params[:from] = parse_to_local(@controller.params[:from]) if @controller.params.has_key?(:from)
+        @controller.params[:until] = parse_to_local(@controller.params[:until]) if @controller.params.has_key?(:until)
         @controller.params[:sort] = @timestamp_field + ' asc'
         @controller.params[:rows] = @limit
         @controller.solr_search_params_logic << :apply_oai_filters
