@@ -29,8 +29,8 @@ module BlacklightOaiProvider
 
       if :all == selector
         if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
-          @controller.params[:from] = parse_to_local(@controller.params[:from]) if @controller.params.has_key?(:from)
-          @controller.params[:until] = parse_to_local(@controller.params[:until]) if @controller.params.has_key?(:until)
+          @controller.params[:from] = parse_time(@controller.params[:from]) if @controller.params.has_key?(:from)
+          @controller.params[:until] = parse_time(@controller.params[:until]) if @controller.params.has_key?(:until)
           @controller.params[:sort] = @timestamp_field + ' asc'
           @controller.params[:rows] = @limit
           @controller.solr_search_params_logic << :apply_oai_filters
@@ -50,8 +50,8 @@ module BlacklightOaiProvider
 
     def select_partial token
       if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
-        @controller.params[:from] = parse_to_local(@controller.params[:from]) if @controller.params.has_key?(:from)
-        @controller.params[:until] = parse_to_local(@controller.params[:until]) if @controller.params.has_key?(:until)
+        @controller.params[:from] = parse_time(@controller.params[:from]) if @controller.params.has_key?(:from)
+        @controller.params[:until] = parse_time(@controller.params[:until]) if @controller.params.has_key?(:until)
         @controller.params[:sort] = @timestamp_field + ' asc'
         @controller.params[:rows] = @limit
         @controller.solr_search_params_logic << :apply_oai_filters
@@ -71,13 +71,13 @@ module BlacklightOaiProvider
       select_partial(token)
     end
 
-    def parse_to_local(time)
+    def parse_time(time)
       time_obj = Time.parse(time.to_s)
-      # return time_obj.utc.xmlschema
-      time_obj = yield(time_obj) if block_given?
-      # Convert to same as DB - :local => :getlocal, :utc => :getutc
-      tzconv = "get#{model.default_timezone.to_s}".to_sym
-      time_obj.send(tzconv).strftime("%Y-%m-%d %H:%M:%S")
+      return time_obj.utc.xmlschema
+      # time_obj = yield(time_obj) if block_given?
+      # # Convert to same as DB - :local => :getlocal, :utc => :getutc
+      # tzconv = "get#{Time.default_timezone.to_s}".to_sym
+      # time_obj.send(tzconv).strftime("%Y-%m-%d %H:%M:%S")
     end
   end
 end
