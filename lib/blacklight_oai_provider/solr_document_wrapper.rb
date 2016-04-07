@@ -31,7 +31,7 @@ module BlacklightOaiProvider
         if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
           @controller.params[:from] = parse_time(@controller.params[:from]) if @controller.params.has_key?(:from)
           @controller.params[:until] = parse_time(@controller.params[:until], true) if @controller.params.has_key?(:until)
-          @controller.solr_search_params_logic << :apply_oai_filters
+          @controller.solr_search_params_logic << :oai_time_filters
         end
         response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
 
@@ -48,7 +48,7 @@ module BlacklightOaiProvider
       if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
         @controller.params[:from] = parse_time(@controller.params[:from]) if @controller.params.has_key?(:from)
         @controller.params[:until] = parse_time(@controller.params[:until]) if @controller.params.has_key?(:until)
-        @controller.solr_search_params_logic << :apply_oai_filters
+        @controller.solr_search_params_logic << :oai_time_filters
       end
       records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
       raise ::OAI::ResumptionTokenException.new unless records
