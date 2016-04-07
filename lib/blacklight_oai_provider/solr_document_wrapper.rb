@@ -31,13 +31,9 @@ module BlacklightOaiProvider
         if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
           @controller.params[:from] = parse_time(@controller.params[:from]) if @controller.params.has_key?(:from)
           @controller.params[:until] = parse_time(@controller.params[:until]) if @controller.params.has_key?(:until)
-          @controller.params[:sort] = @timestamp_field + ' asc'
-          @controller.params[:rows] = @limit
           @controller.solr_search_params_logic << :apply_oai_filters
-          response, records = @controller.get_search_results
-        else
-          response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
         end
+        response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
 
         if @limit && response.total >= @limit
           return select_partial(OAI::Provider::ResumptionToken.new(options.merge({:last => 0})))
@@ -52,13 +48,9 @@ module BlacklightOaiProvider
       if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
         @controller.params[:from] = parse_time(@controller.params[:from]) if @controller.params.has_key?(:from)
         @controller.params[:until] = parse_time(@controller.params[:until]) if @controller.params.has_key?(:until)
-        @controller.params[:sort] = @timestamp_field + ' asc'
-        @controller.params[:rows] = @limit
         @controller.solr_search_params_logic << :apply_oai_filters
-        records = @controller.get_search_results(@controller.params, {:start => token.last}).last
-      else
-        records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
       end
+      records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
       raise ::OAI::ResumptionTokenException.new unless records
 
       OAI::Provider::PartialResult.new(records, token.next(token.last+@limit))
@@ -74,10 +66,6 @@ module BlacklightOaiProvider
     def parse_time(time)
       time_obj = Time.parse(time.to_s)
       return time_obj.utc.xmlschema
-      # time_obj = yield(time_obj) if block_given?
-      # # Convert to same as DB - :local => :getlocal, :utc => :getutc
-      # tzconv = "get#{Time.default_timezone.to_s}".to_sym
-      # time_obj.send(tzconv).strftime("%Y-%m-%d %H:%M:%S")
     end
   end
 end
