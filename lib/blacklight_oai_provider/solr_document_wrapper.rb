@@ -28,15 +28,11 @@ module BlacklightOaiProvider
       return next_set(options[:resumption_token]) if options[:resumption_token]
 
       if :all == selector
-        puts @options
-        puts @controller.params
-        # 2016-04-06T17:09:49Z
-        if @controller.params.has_key?(:from)
-          puts "has from param"
-          # response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
+        if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
+          @controller.params[:from] = parse_to_local(@controller.params[:from]) if @controller.has_key?(:from)
+          @controller.params[:until] = parse_to_local(@controller.params[:until]) if @controller.has_key?(:until)
           @controller.params[:sort] = @timestamp_field + ' asc'
           @controller.params[:rows] = @limit
-          puts @controller.solr_search_params_logic
           @controller.solr_search_params_logic << :apply_oai_filters
           response, records = @controller.get_search_results
         else
@@ -53,15 +49,13 @@ module BlacklightOaiProvider
     end
 
     def select_partial token
-      if @controller.params.has_key?(:from)
-        puts "has from param"
-        # records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]", :start => token.last}).last
+      if @controller.params.has_key?(:from) || @controller.params.has_key?(:until)
+        @controller.params[:from] = parse_to_local(@controller.params[:from]) if @controller.has_key?(:from)
+        @controller.params[:until] = parse_to_local(@controller.params[:until]) if @controller.has_key?(:until)
         @controller.params[:sort] = @timestamp_field + ' asc'
         @controller.params[:rows] = @limit
-        puts @controller.solr_search_params_logic
         @controller.solr_search_params_logic << :apply_oai_filters
-        # @controller.solr_search_params_logic += [:apply_oai_filters]
-        response, records = @controller.get_search_results
+        records = @controller.get_search_results(@controller.params, {:start => token.last}).last
       else
         records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
       end
@@ -77,10 +71,13 @@ module BlacklightOaiProvider
       select_partial(token)
     end
 
-    def apply_oai_filters(solr_parameters, user_parameters)
-      solr_parameters[:sort] = @timestamp_field + ' asc'
-      solr_parameters[:rows] = @limit
-      solr_parameters[:fq] << "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"
+    def parse_to_local(time)
+      time_obj = Time.parse(time.to_s)
+      # return time_obj.utc.xmlschema
+      time_obj = yield(time_obj) if block_given?
+      # Convert to same as DB - :local => :getlocal, :utc => :getutc
+      tzconv = "get#{model.default_timezone.to_s}".to_sym
+      time_obj.send(tzconv).strftime("%Y-%m-%d %H:%M:%S")
     end
   end
 end
