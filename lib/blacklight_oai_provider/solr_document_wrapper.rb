@@ -69,11 +69,11 @@ module BlacklightOaiProvider
       token = OAI::Provider::ResumptionToken.parse(token_string)
       select_partial(token)
     end
-  end
 
-  def apply_filters(solr_parameters, user_parameters)
-    solr_parameters[:sort] = @timestamp_field + ' asc'
-    solr_parameters[:rows] = @limit
-    solr_parameters[:fq] << "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"
+    def apply_filters(solr_parameters, user_parameters)
+      solr_parameters[:sort] = @timestamp_field + ' asc'
+      solr_parameters[:rows] = @limit
+      solr_parameters[:fq] << "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"
+    end
   end
 end
