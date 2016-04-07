@@ -33,9 +33,9 @@ module BlacklightOaiProvider
         # 2016-04-06T17:09:49Z
         if @controller.params.has_key?(:from)
           puts "has from param"
-          puts @controller.solr_parameters
-          puts @controller.user_parameters
-          response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
+          # response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"})
+          @controller.solr_search_params_logic += [:apply_filters]
+          response, records = @controller.get_search_results
         else
           response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
         end
@@ -52,7 +52,9 @@ module BlacklightOaiProvider
     def select_partial token
       if @controller.params.has_key?(:from)
         puts "has from param"
-        records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]", :start => token.last}).last
+        # records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :fq => "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]", :start => token.last}).last
+        @controller.solr_search_params_logic += [:apply_filters]
+        response, records = @controller.get_search_results
       else
         records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
       end
@@ -67,5 +69,11 @@ module BlacklightOaiProvider
       token = OAI::Provider::ResumptionToken.parse(token_string)
       select_partial(token)
     end
+  end
+
+  def apply_filters(solr_parameters, user_parameters)
+    solr_parameters[:sort] = @timestamp_field + ' asc'
+    solr_parameters[:rows] = @limit
+    solr_parameters[:fq] << "system_create_dtsi:[" + @controller.params[:from] + " TO NOW]"
   end
 end
