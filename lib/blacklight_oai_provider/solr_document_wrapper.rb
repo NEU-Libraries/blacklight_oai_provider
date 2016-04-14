@@ -40,13 +40,14 @@ module BlacklightOaiProvider
       technical_reports.spec = "00000004"
       set_list << technical_reports
 
-      comps = Compilation.where(:published_set_tesim => "true")
+      query_result = ActiveFedora::SolrService.query("published_set_tesim:\"true\"")
 
-      if !comps.blank?
-        comps.each do |c|
+      if query_result.count != 0
+        query_result.each do |qr|
+          doc = SolrDocument.new(qr)
           tmp_set = OAI::Set.new()
-          tmp_set.name = c.title
-          tmp_set.spec = c.pid.split(":").last
+          tmp_set.name = doc.title
+          tmp_set.spec = doc.pid.split(":").last
           set_list << tmp_set
         end
       end
