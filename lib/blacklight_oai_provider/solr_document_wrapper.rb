@@ -13,6 +13,43 @@ module BlacklightOaiProvider
     end
 
     def sets
+      set_list = []
+
+      etds = OAI::Set.new()
+      etds.name = "Theses and Dissertations"
+      etds.spec = "00000000"
+      set_list << etds
+
+      research = OAI::Set.new()
+      research.name = "Research Publications"
+      research.spec = "00000001"
+      set_list << research
+
+      presentations = OAI::Set.new()
+      presentations.name = "Presentations"
+      presentations.spec = "00000002"
+      set_list << presentations
+
+      monographs = OAI::Set.new()
+      monographs.name = "Monographs"
+      monographs.spec = "00000003"
+      set_list << monographs
+
+      technical_reports = OAI::Set.new()
+      technical_reports.name = "Technical Reports"
+      technical_reports.spec = "00000004"
+      set_list << technical_reports
+
+      comps = Compilation.where(:published_set_tesim => "true")
+
+      comps.each do |c|
+        tmp_set = OAI::Set.new()
+        tmp_set.name = c.title
+        tmp_set.spec = c.pid.split(":").last
+        set_list << tmp_set
+      end
+
+      return set_list
     end
 
     def earliest
@@ -32,6 +69,22 @@ module BlacklightOaiProvider
           @controller.params[:until] = parse_time(@controller.params[:until], true) if @controller.params.has_key?(:until)
           @controller.solr_search_params_logic << :oai_time_filters
         end
+        if @controller.params.has_key?(:set)
+          if @controller.params[:set] == "00000000"
+            @controller.solr_search_params_logic << :theses_and_dissertations_filter
+          elsif @controller.params[:set] == "00000001"
+            @controller.solr_search_params_logic << :research_filter
+          elsif @controller.params[:set] == "00000002"
+            @controller.solr_search_params_logic << :presentations_filter
+          elsif @controller.params[:set] == "00000003"
+            @controller.solr_search_params_logic << :monographs_filter
+          elsif @controller.params[:set] == "00000004"
+            @controller.solr_search_params_logic << :technical_reports_filter
+          else
+            @controller.solr_search_params_logic << :oai_set_filter
+          end
+        end
+
         response, records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit})
 
         if @limit && response.total >= @limit
