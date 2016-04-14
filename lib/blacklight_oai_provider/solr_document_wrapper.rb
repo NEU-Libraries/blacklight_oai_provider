@@ -102,6 +102,21 @@ module BlacklightOaiProvider
         @controller.params[:until] = parse_time(@controller.params[:until]) if @controller.params.has_key?(:until)
         @controller.solr_search_params_logic << :oai_time_filters
       end
+      if @controller.params.has_key?(:set)
+        if @controller.params[:set] == "00000000"
+          @controller.solr_search_params_logic << :theses_and_dissertations_filter
+        elsif @controller.params[:set] == "00000001"
+          @controller.solr_search_params_logic << :research_filter
+        elsif @controller.params[:set] == "00000002"
+          @controller.solr_search_params_logic << :presentations_filter
+        elsif @controller.params[:set] == "00000003"
+          @controller.solr_search_params_logic << :monographs_filter
+        elsif @controller.params[:set] == "00000004"
+          @controller.solr_search_params_logic << :technical_reports_filter
+        else
+          @controller.solr_search_params_logic << :oai_set_filter
+        end
+      end      
       records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
       raise ::OAI::ResumptionTokenException.new unless records
 
