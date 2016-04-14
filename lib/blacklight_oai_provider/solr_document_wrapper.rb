@@ -42,11 +42,13 @@ module BlacklightOaiProvider
 
       comps = Compilation.where(:published_set_tesim => "true")
 
-      comps.each do |c|
-        tmp_set = OAI::Set.new()
-        tmp_set.name = c.title
-        tmp_set.spec = c.pid.split(":").last
-        set_list << tmp_set
+      if !comps.blank?
+        comps.each do |c|
+          tmp_set = OAI::Set.new()
+          tmp_set.name = c.title
+          tmp_set.spec = c.pid.split(":").last
+          set_list << tmp_set
+        end
       end
 
       return set_list
@@ -116,7 +118,7 @@ module BlacklightOaiProvider
         else
           @controller.solr_search_params_logic << :oai_set_filter
         end
-      end      
+      end
       records = @controller.get_search_results(@controller.params, {:sort => @timestamp_field + ' asc', :rows => @limit, :start => token.last}).last
       raise ::OAI::ResumptionTokenException.new unless records
 
